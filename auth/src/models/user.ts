@@ -1,4 +1,6 @@
+import { doesNotMatch } from "assert";
 import mongoose, { Schema } from "mongoose";
+import { Password } from "../utilites/password";
 
 interface UserAttrs {
     email: string,
@@ -29,6 +31,14 @@ const userSchema = new Schema({
         type: String,
         required: false
     }
+})
+
+userSchema.pre('save', function(done) {
+    if(this.isModified()) {
+        const hash = Password.hash(this.get('password'))
+        this.set('password', hash)
+    }
+    done()
 })
 
 userSchema.statics.build = function (attrs: UserAttrs) {

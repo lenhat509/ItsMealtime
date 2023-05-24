@@ -1,4 +1,3 @@
-import { doesNotMatch } from "assert";
 import mongoose, { Schema } from "mongoose";
 import { Password } from "../utilites/password";
 
@@ -19,19 +18,29 @@ interface UserModel extends mongoose.Model<UserDoc> {
 }
 
 const userSchema = new Schema({
-    email: {
-        type: String,
-        required: true
-    },
-    password: {
-        type: String,
-        required: true
-    },
-    avatar: {
-        type: String,
-        required: false
-    }
-})
+        email: {
+            type: String,
+            required: true
+        },
+        password: {
+            type: String,
+            required: true
+        },
+        avatar: {
+            type: String,
+            required: false
+        }
+    }, 
+    {
+        toJSON: {
+            transform: (doc, ret) => {
+                ret.id = ret._id
+                delete ret.password
+                delete ret._id
+                delete ret.__v
+            }
+        }
+    })
 
 userSchema.pre('save', function(done) {
     if(this.isModified()) {

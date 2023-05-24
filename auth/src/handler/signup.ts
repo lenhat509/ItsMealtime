@@ -1,9 +1,9 @@
 import { Response, Request, Router } from "express"
-import { body, FieldValidationError, validationResult } from "express-validator"
-import { RequestValidationError } from "../error/request-validation-error"
+import { body } from "express-validator"
 import { User } from "../models/user"
 import "express-async-errors"
 import { BadRequestError } from "../error/bad-request-error"
+import { requestValidation } from "../middleware/request-validation"
 
 const router = Router()
 
@@ -17,12 +17,8 @@ router.post("/signup", [
             max: 20
         })
         .withMessage("Length should be between 8 and 20")
-    ],
+    ], requestValidation,
     async (req: Request, res: Response) => {
-        const errors = validationResult(req)
-        if(!errors.isEmpty()) {
-            throw new RequestValidationError(errors.array() as FieldValidationError[])
-        }
         const existingUser = await User.findOne({
             email: req.body.email
         })
@@ -38,7 +34,7 @@ router.post("/signup", [
         })
         await user.save()
 
-        res.status(201).json({})
+        res.status(201).json(user)
 })
 
 

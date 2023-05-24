@@ -1,15 +1,14 @@
 import { Router, Request, Response } from "express"
-import { body, validationResult, FieldValidationError } from "express-validator"
-import { RequestValidationError } from "../error/request-validation-error"
+import { body } from "express-validator"
 import { User } from "../models/user"
 import "express-async-errors"
 import { Password } from "../utilites/password"
-import jwt from "jsonwebtoken"
 import { BadRequestError } from "../error/bad-request-error"
+import { requestValidation } from "../middleware/request-validation"
+import { JWTAuth } from "../utilites/jwt-auth"
+import { requireAuth } from "../middleware/require-auth"
 
 const router = Router()
-
-const SECRET = 'hg83g0bnwhgobs5d83905bsyw92nd'
 
 router.post("/login", [
         body("email")
@@ -21,13 +20,8 @@ router.post("/login", [
             max: 20
         })
         .withMessage("Length should be between 8 and 20")
-    ],
+    ], requestValidation,
     async (req: Request, res: Response) => {
-        const errors = validationResult(req)
-        if(!errors.isEmpty()) {
-            throw new RequestValidationError(errors.array() as FieldValidationError[])
-        }
-
         const existingUser = await User.findOne({
             email: req.body.email
         })
@@ -36,19 +30,18 @@ router.post("/login", [
             throw new BadRequestError("User does not exist")
         
         const matchPasswords = Password.compare(req.body.password, existingUser.password)
-        
         if(!matchPasswords)
             throw new BadRequestError("Invalid Password")
 
-        const token = jwt.sign({ email: existingUser.email }, SECRET)    
+        const token = JWTAuth.sign(existingUser.toJSON())    
 
         res.cookie("token", token)
 
-        res.status(200).json({})
+        res.status(200).json(existingUser)
 })
 
-// router.post("/test", (req: Request, res: Response) => {
-//     console.log(req.cookies)
-// })
+router.post("/test", requireAuth, (req: Request, res: Response) => {
+    res.status(200).json(req.currentUser)
+})
 
 export { router as loginRouter }

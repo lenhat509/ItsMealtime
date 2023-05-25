@@ -23,7 +23,7 @@ router.post("/login", [
     ], requestValidation,
     async (req: Request, res: Response) => {
         const existingUser = await User.findOne({
-            email: req.body.email
+            email: req.body.email 
         })
 
         if(!existingUser)
@@ -32,6 +32,8 @@ router.post("/login", [
         const matchPasswords = Password.compare(req.body.password, existingUser.password)
         if(!matchPasswords)
             throw new BadRequestError("Invalid Password")
+
+        console.log(process.env.JWT_SECRET)
 
         const token = JWTAuth.sign(existingUser.toJSON())    
 

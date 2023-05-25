@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express"
 import { NotAuthenticatedError } from "../error/not-authenticated-error"
 import { JWTAuth } from "../utilites/jwt-auth"
 
-interface UserPayLoad {
+export interface UserPayLoad {
     email: string,
     id: string
 }

@@ -1,7 +1,7 @@
 import jwt, { JwtPayload } from "jsonwebtoken"
 
 export class JWTAuth {
-    private static SECRET = process.env.JWT_SECRET!
+    public static SECRET: string = process.env.JWT_SECRET!
 
     public static verify(token: string): JwtPayload | string {
         return jwt.verify(token, JWTAuth.SECRET);
